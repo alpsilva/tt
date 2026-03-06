@@ -1,6 +1,7 @@
 import re
 import unittest
 import uuid
+from datetime import datetime
 
 
 class UsernameException(Exception):
@@ -28,12 +29,19 @@ class Payment:
         return f"{self.actor.username} paid {self.target.username} ${round(self.amount, 2)} for {self.note}"
  
 
+class Event:
+    def __init__(self, message: str):
+        self.message = message
+        self.timestamp = datetime.now()
+
 class User:
 
     def __init__(self, username):
         self.credit_card_number = None
         self.balance = 0.0
         self.list_payments = []
+        self.list_friends = []
+        self.list_feed_events = []
 
         if self._is_valid_username(username):
             self.username = username
@@ -42,11 +50,17 @@ class User:
 
 
     def retrieve_feed(self) -> list[Payment]:
-        return self.list_payments
+        return self.list_feed_events
+    
+    def add_event(self, message: str) -> Event:
+        self.list_feed_events.append(Event(message))
 
-    def add_friend(self, new_friend):
-        # TODO: add code here
-        pass
+    def add_friend(self, new_friend: 'User'):
+        self.list_friends.append(new_friend.username)
+        new_friend.list_friends.append(self.username)
+
+        self.add_event(f"{self.username} and {new_friend.username} are now friends")
+        new_friend.add_event(f"{new_friend.username} and {self.username} are now friends")
 
     def add_to_balance(self, amount):
         self.balance += float(amount)
@@ -72,6 +86,11 @@ class User:
         
         self.list_payments.append(payment)
         target.list_payments.append(payment)
+
+        payment_event = str(payment)
+        self.add_event(payment_event)
+        target.add_event(payment_event)
+
         return payment
 
     def pay_with_card(self, target: 'User', amount: float, note: str) -> Payment:
@@ -122,11 +141,11 @@ class MiniVenmo:
         user.add_credit_card(credit_card_number)
         return user
 
-    def render_feed(self, feed: list[Payment]):
+    def render_feed(self, feed: list[Event]):
         output = ""
 
-        for index, payment in enumerate(feed):
-            output += f"{index + 1}. {payment}\n"
+        for index, event in enumerate(feed):
+            output += f"{index + 1}. {event.message}\n"
 
         print(output)
 
@@ -147,9 +166,9 @@ class MiniVenmo:
             print(e)
 
         feed = bobby.retrieve_feed()
+        bobby.add_friend(carol)
         venmo.render_feed(feed)
 
-        bobby.add_friend(carol)
 
 
 class TestUser(unittest.TestCase):
