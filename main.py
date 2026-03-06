@@ -60,34 +60,17 @@ class User:
 
     def pay(self, target, amount, note) -> Payment:
         amount = float(amount)
-
-        if self.username == target.username:
-            raise PaymentException('User cannot pay themselves.')
-
-        elif amount <= 0.0:
-            raise PaymentException('Amount must be a non-negative number.')
         
         has_enough_balance = self.balance >= amount
         if has_enough_balance:
-            self.balance -= amount
-            target.add_to_balance(amount)
-            payment = Payment(amount, self, target, note)
-            return payment
-        
+            return self.pay_with_balance(target, amount, note)
         else:
             return self.pay_with_card(target, amount, note)
 
-    def pay_with_card(self, target, amount, note):
+    def pay_with_card(self, target: 'User', amount: float, note: str) -> Payment:
         amount = float(amount)
 
-        if self.username == target.username:
-            raise PaymentException('User cannot pay themselves.')
-
-        elif amount <= 0.0:
-            raise PaymentException('Amount must be a non-negative number.')
-
-        elif self.credit_card_number is None:
-            raise PaymentException('Must have a credit card to make a payment.')
+        self._validate_pay(target, amount, via_card=True)
 
         self._charge_credit_card(self.credit_card_number)
         payment = Payment(amount, self, target, note)
@@ -95,9 +78,13 @@ class User:
 
         return payment
 
-    def pay_with_balance(self, target, amount, note):
-        # TODO: add code here
-        pass
+    def pay_with_balance(self, target: 'User', amount: float, note: str) -> Payment:
+        self._validate_pay(target, amount, via_card=False)
+        self.balance -= amount
+        target.add_to_balance(amount)
+        payment = Payment(amount, self, target, note)
+
+        return payment
 
     def _is_valid_credit_card(self, credit_card_number):
         return credit_card_number in ["4111111111111111", "4242424242424242"]
@@ -108,6 +95,17 @@ class User:
     def _charge_credit_card(self, credit_card_number):
         # magic method that charges a credit card thru the card processor
         pass
+    
+    def _validate_pay(self, target: 'User', amount: float, via_card: bool):
+        if self.username == target.username:
+            raise PaymentException('User cannot pay themselves.')
+
+        elif amount <= 0.0:
+            raise PaymentException('Amount must be a non-negative number.')
+
+        elif via_card and self.credit_card_number is None:
+            raise PaymentException('Must have a credit card to make a payment.')
+
 
 
 class MiniVenmo:
