@@ -26,4 +26,3 @@ Implement the `User.retrieve_activity()` and `MiniVenmo.render_feed()` methods s
 ## Notes
 
 ### Improvements
-- Added type hinting to relevant functions (parameters and return type).

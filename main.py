@@ -97,8 +97,10 @@ class User:
 
 class MiniVenmo:
     def create_user(self, username, balance, credit_card_number):
-        # TODO: add code here
-        pass
+        user = User(username)
+        user.add_to_balance(balance)
+        user.add_credit_card(credit_card_number)
+        return user
 
     def render_feed(self, feed):
         # Bobby paid Carol $5.00 for Coffee
