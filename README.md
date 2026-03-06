@@ -36,3 +36,6 @@ Implement the `User.retrieve_activity()` and `MiniVenmo.render_feed()` methods s
 5. Added `list_feed_events` with a message and timestamp to hold all events for user, from all sources.
 
 ### Improvements
+Put each model in it's own file to make the project more readable.
+
+Added type hinting where sensible.
