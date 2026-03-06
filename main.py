@@ -17,12 +17,15 @@ class CreditCardException(Exception):
 
 class Payment:
 
-    def __init__(self, amount, actor, target, note):
+    def __init__(self, amount: float, actor: 'User', target: 'User', note: str):
         self.id = str(uuid.uuid4())
         self.amount = float(amount)
         self.actor = actor
         self.target = target
         self.note = note
+
+    def __str__(self):
+        return f"{self.actor.username} paid {self.target.username} ${round(self.amount, 2)} for {self.note}"
  
 
 class User:
@@ -30,6 +33,7 @@ class User:
     def __init__(self, username):
         self.credit_card_number = None
         self.balance = 0.0
+        self.list_payments = []
 
         if self._is_valid_username(username):
             self.username = username
@@ -37,9 +41,8 @@ class User:
             raise UsernameException('Username not valid.')
 
 
-    def retrieve_feed(self):
-        # TODO: add code here
-        return []
+    def retrieve_feed(self) -> list[Payment]:
+        return self.list_payments
 
     def add_friend(self, new_friend):
         # TODO: add code here
@@ -58,14 +61,18 @@ class User:
         else:
             raise CreditCardException('Invalid credit card number.')
 
-    def pay(self, target, amount, note) -> Payment:
+    def pay(self, target: 'User', amount: float, note: str) -> Payment:
         amount = float(amount)
         
         has_enough_balance = self.balance >= amount
         if has_enough_balance:
-            return self.pay_with_balance(target, amount, note)
+            payment = self.pay_with_balance(target, amount, note)
         else:
-            return self.pay_with_card(target, amount, note)
+            payment = self.pay_with_card(target, amount, note)
+        
+        self.list_payments.append(payment)
+        target.list_payments.append(payment)
+        return payment
 
     def pay_with_card(self, target: 'User', amount: float, note: str) -> Payment:
         amount = float(amount)
@@ -115,11 +122,13 @@ class MiniVenmo:
         user.add_credit_card(credit_card_number)
         return user
 
-    def render_feed(self, feed):
-        # Bobby paid Carol $5.00 for Coffee
-        # Carol paid Bobby $15.00 for Lunch
-        # TODO: add code here
-        pass
+    def render_feed(self, feed: list[Payment]):
+        output = ""
+
+        for index, payment in enumerate(feed):
+            output += f"{index + 1}. {payment}\n"
+
+        print(output)
 
     @classmethod
     def run(cls):
@@ -151,4 +160,6 @@ class TestUser(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    # unittest.main()
+    mv = MiniVenmo()
+    mv.run()
