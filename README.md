@@ -25,4 +25,14 @@ Implement the `User.retrieve_activity()` and `MiniVenmo.render_feed()` methods s
 
 ## Notes
 
+1. No notes. Pretty straightforward.
+
+2. Used helper methods `pay_with_balance` and `pay_with_card`. Centralized payment validation in `_validate_pay`.
+
+3. Added `list_payments` to `User`. `Payments` are recorded both on actor and target lists. `retrieve_feed` returns this object. `render_feed` displays it as asked.
+
+4. Added `list_friends` to `User`. Similar to `list_payments`, a new friend entry is added on both actor and target.
+
+5. Added `list_feed_events` with a message and timestamp to hold all events for user, from all sources.
+
 ### Improvements
